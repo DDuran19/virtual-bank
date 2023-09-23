@@ -16,4 +16,9 @@ public class TransactionLog {
         this.details = details;
 
     }
+
+    @Override
+    public String toString() {
+        return transactionType + ": " + details + " at " + timestamp;
+    }
 }

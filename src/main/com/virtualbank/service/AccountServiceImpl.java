@@ -81,6 +81,12 @@ public class AccountServiceImpl implements AccountService {
         account.updateLogs(newLog);
     }
 
+    private void showLogs(AccountHolder account) {
+        for (TransactionLog log : account.getLogs()) {
+            System.out.println(log.toString());
+        }
+    }
+
     private void logTransaction(AccountHolder account, double amount, double currentBalance, double newBalance, String from, String to) {
         LocalDateTime timestamp = LocalDateTime.now();
         String logDetails = "Amount: " + amount + " : " + from + " to " + to + currentBalance + " -> " + newBalance;
