@@ -1,5 +1,7 @@
 package main.com.virtualbank.userInterface;
 
+import main.com.virtualbank.exceptions.CredentialsException;
+import main.com.virtualbank.exceptions.QuitException;
 import main.com.virtualbank.model.AccountHolder;
 import main.com.virtualbank.service.AccountService;
 import main.com.virtualbank.service.AccountServiceImpl;
@@ -26,7 +28,7 @@ public class UserInterface {
 
     private void showWelcomeScreen() {
         String welcome = "\nWelcome to Virtual Bank 1.0 \n\n";
-        System.out.println(welcome);
+        System.out.print(welcome);
     }
 
     private AccountHolder startApp(AtomicBoolean loggedInStatus) {
@@ -42,10 +44,12 @@ public class UserInterface {
                     case 2 -> register();
                     case 3 -> exitApp();
                     case 4 -> loggedInStatus.set(true);
-                    default -> System.out.println("Invalid Option selected!");
+                    default -> System.out.print("Invalid Option selected!");
                 }
-            } catch (Exception error) {
-                System.out.println("Only numbers are allowed!");
+            } catch (QuitException e) {
+                return null;
+            } catch (Exception e) {
+                System.out.print(e.getMessage());
             }
 
         }
@@ -60,56 +64,51 @@ public class UserInterface {
             showWelcomeScreen();
             System.out.println(welcomeScreen);
             System.out.println(loginString);
+            try {
+                String username = input.get("Enter username: ", true);
+                String password = input.get("Enter password: ");
 
-            String username = input.get("Enter username: ", true);
-            if (username == null) return null;
+                AccountHolder accountHolder = BANK_SERVICE.login(username, password);
 
-            String password = input.get("Enter password: ");
-            if (password == null) return null;
+                if (accountHolder != null) {
+                    loggedInStatus.set(true);
+                    System.out.println("LOGGED IN SUCCESSFULLY!");
+                    pressAnyKeyToContinue();
+                    return accountHolder;
+                }
+                System.out.println(error);
 
-            AccountHolder accountHolder = BANK_SERVICE.login(username, password);
-
-            if (accountHolder != null) {
-                loggedInStatus.set(true);
-                System.out.println("LOGGED IN SUCCESSFULLY!");
-                pressAnyKeyToContinue();
-                return accountHolder;
+            } catch (QuitException e) {
+                return null;
             }
-            System.out.println(error);
         }
         return null;
     }
 
-    private boolean checkForQuit(String string) {
-        return string.equalsIgnoreCase("quit");
-    }
-
     private void register() {
         System.out.print("Answer on-screen questions to register. Type \"quit\" anytime to cancel.\n\n");
-
-        String username = input.get("Enter username: ", true, "");
-        if (username == null) return;
-
-        String password = input.get("Enter password: ", true, "");
-        if (password == null) return;
-
-        String firstName = input.get("Enter your first name: ", true, "");
-        if (firstName == null) return;
-
-        String lastName = input.get("Enter your last name: ", true, "");
-        if (lastName == null) return;
-
-
         try {
+            String username = input.get("Enter username: ", true, "");
+            String password = input.get("Enter password: ", true, "");
+            String firstName = input.get("Enter your first name: ", true, "");
+            String lastName = input.get("Enter your last name: ", true, "");
+
+
             BANK_SERVICE.addAccountHolder(username, password, firstName, lastName);
             System.out.println("Successfully Created account!");
             pressAnyKeyToContinue();
-        } catch (final Exception ignored) {
+        } catch (QuitException ignored) {
+        } catch (CredentialsException e) {
+            System.out.println(e.getMessage());
         }
     }
 
-    private void exitApp() {
-        System.out.println(exitConfirmation);
+    private void exitApp() throws QuitException {
+        String confirmation = input.get(exitConfirmation);
+        if (confirmation.equalsIgnoreCase("Y")) {
+            System.out.println("Thank you for using Virtual Bank 1.0! ");
+            throw new QuitException();
+        }
     }
 
     private void pressAnyKeyToContinue() {
