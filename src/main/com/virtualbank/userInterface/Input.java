@@ -1,5 +1,7 @@
 package main.com.virtualbank.userInterface;
 
+import main.com.virtualbank.exceptions.QuitException;
+
 import java.util.Scanner;
 
 public class Input {
@@ -10,20 +12,20 @@ public class Input {
         return scanner.next();
     }
 
-    public String get(String prompt, boolean quitFlag) {
+    public String get(String prompt, boolean quitFlag) throws QuitException {
         String inputString = get(prompt);
         if (quitFlag && inputString.equalsIgnoreCase("quit")) {
-            return null;
+            throw new QuitException();
         }
         return inputString;
     }
 
-    public String get(String prompt, boolean quitFlag, String... notAllowedStrings) {
+    public String get(String prompt, boolean quitFlag, String... notAllowedStrings) throws QuitException {
         while (true) {
             String inputString = get(prompt);
 
             if (quitFlag && inputString.equalsIgnoreCase("quit")) {
-                return null;
+                throw new QuitException();
             }
             boolean isNotAllowed = false;
             for (String notAllowed : notAllowedStrings) {
@@ -56,13 +58,23 @@ public class Input {
                 return inputString;
             }
 
-            System.out.println("Invalid input. Please enter a different value.");
+            System.out.println("Invalid input. Please enter a different value. ");
         }
     }
 
-    public int getInt(String prompt) {
-        System.out.println(prompt);
-        return scanner.nextInt();
+    public int getInt(String prompt) throws QuitException {
+        boolean validNumber = false;
+        int number = 0;
+        while (!validNumber) {
+            try {
+                String userInput = get(prompt, true);
+                validNumber = true;
+                number = Integer.parseInt(userInput);
+            } catch (NumberFormatException e) {
+                System.out.print("Only numbers are allowed! ");
+            }
+        }
+        return number;
     }
 
 
