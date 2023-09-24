@@ -28,4 +28,6 @@ public interface AccountService {
     void showLogs(AccountHolder account);
 
     void authenticate(AccountHolder account, String password);
+
+    String getFullName(AccountHolder account);
 }

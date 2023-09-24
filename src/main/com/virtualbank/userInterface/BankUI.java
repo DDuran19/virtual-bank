@@ -21,10 +21,9 @@ public class BankUI {
 
 
     public void start() throws QuitException {
-        System.out.println("Welcome to the Virtual Bank!");
-
         while (true) {
             clearScreen.run();
+            System.out.printf("Welcome back, %s!\n", BANK_SERVICE.getFullName(account));
             System.out.println("1. Deposit");
             System.out.println("2. Withdraw");
             System.out.println("3. Transfer");
@@ -35,26 +34,13 @@ public class BankUI {
             int choice = input.getInt("");
             try {
                 switch (choice) {
-                    case 1:
-                        performDeposit();
-                        break;
-                    case 2:
-                        performWithdraw();
-                        break;
-                    case 3:
-                        performTransfer();
-                        break;
-                    case 4:
-                        checkBalance();
-                        break;
-                    case 5:
-                        showTransactionLogs();
-                        break;
-                    case 6:
-                        new UserInterface().startUI();
-                        return;
-                    default:
-                        System.out.println("Invalid choice. Please try again. ");
+                    case 1 -> performDeposit();
+                    case 2 -> performWithdraw();
+                    case 3 -> performTransfer();
+                    case 4 -> checkBalance();
+                    case 5 -> showTransactionLogs();
+                    case 6 -> new UserInterface().startUI();
+                    default -> System.out.println("Invalid choice. Please try again. ");
                 }
             } catch (QuitException ignored) {
             } catch (CredentialsException ignored) {

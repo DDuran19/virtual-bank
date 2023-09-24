@@ -192,6 +192,11 @@ public class AccountServiceImpl implements AccountService {
         if (account.passwordIsWrong(password)) throw new CredentialsException(CredentialErrorCodes.INVALID_PASSWORD);
     }
 
+    @Override
+    public String getFullName(AccountHolder account) {
+        return account.getFullName();
+    }
+
     private AccountHolder getAccountHolder(String name) {
         return accountHolderMap.get(name);
     }
