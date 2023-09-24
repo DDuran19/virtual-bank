@@ -23,6 +23,14 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public void deposit(AccountHolder account, double amount) {
+        double currentBalance = account.getBalance();
+        double newBalance = currentBalance + amount;
+        account.setBalance(newBalance);
+
+        logTransaction(account, amount, currentBalance, newBalance, TransactionTypes.DEPOSIT);
+    }
+
     public void deposit(String username, String password, double amount) {
 
         AccountHolder account = login(username, password);
@@ -33,14 +41,14 @@ public class AccountServiceImpl implements AccountService {
         logTransaction(account, amount, currentBalance, newBalance, TransactionTypes.DEPOSIT);
     }
 
-    public void deposit(String username, double amount, String from) {
 
-        AccountHolder account = getAccountHolder(username);
+    private void deposit(String toUsername, double amount, String from) {
+
+        AccountHolder account = getAccountHolder(toUsername);
         double currentBalance = account.getBalance();
         double newBalance = currentBalance + amount;
         account.setBalance(newBalance);
-
-        logTransaction(account, amount, currentBalance, newBalance, from, username);
+        logTransaction(account, amount, currentBalance, newBalance, from, toUsername);
     }
 
     @Override
@@ -70,9 +78,43 @@ public class AccountServiceImpl implements AccountService {
         logTransaction(account, amount, currentBalance, newBalance, username, to);
     }
 
+    @Override
+    public void withdraw(AccountHolder account, double amount) {
+        double currentBalance = account.getBalance();
+        if (currentBalance < amount) {
+            throw new WithdrawException();
+        }
+
+        double newBalance = currentBalance - amount;
+        account.setBalance(newBalance);
+
+        logTransaction(account, amount, currentBalance, newBalance, TransactionTypes.WITHDRAW);
+    }
+
+    public void withdraw(AccountHolder account, double amount, boolean transferFlag) {
+        if (transferFlag) {
+            double currentBalance = account.getBalance();
+            if (currentBalance < amount) {
+                throw new WithdrawException();
+            }
+
+            double newBalance = currentBalance - amount;
+            account.setBalance(newBalance);
+            return;
+        }
+        withdraw(account, amount);
+    }
+
+    @Override
+    public void showLogs(AccountHolder account) {
+        for (TransactionLog log : account.getLogs()) {
+            System.out.println(log.toString());
+        }
+    }
+
     private void logTransaction(AccountHolder account, double amount, double currentBalance, double newBalance, TransactionTypes type) {
         LocalDateTime timestamp = LocalDateTime.now();
-        String logDetails = "Amount: " + amount + " : " + currentBalance + " -> " + newBalance;
+        String logDetails = amount + "⮚ self" + "\t" + currentBalance + " ⟶ " + newBalance;
         TransactionLog newLog = new TransactionLog(
                 type,
                 timestamp,
@@ -81,15 +123,9 @@ public class AccountServiceImpl implements AccountService {
         account.updateLogs(newLog);
     }
 
-    private void showLogs(AccountHolder account) {
-        for (TransactionLog log : account.getLogs()) {
-            System.out.println(log.toString());
-        }
-    }
-
     private void logTransaction(AccountHolder account, double amount, double currentBalance, double newBalance, String from, String to) {
         LocalDateTime timestamp = LocalDateTime.now();
-        String logDetails = "Amount: " + amount + " : " + from + " to " + to + currentBalance + " -> " + newBalance;
+        String logDetails = amount + "⮚ " + from + " to " + to + " \t" + currentBalance + " ⟶ " + newBalance;
         TransactionLog newLog = new TransactionLog(
                 TransactionTypes.TRANSFER,
                 timestamp,
@@ -105,12 +141,28 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public void transfer(AccountHolder account, String toUsername, double amount) throws WithdrawException {
+        withdraw(account, amount, true);
+        deposit(toUsername, amount, account.getUsername());
+    }
+
+    @Override
     public double getAccountBalance(String name) {
         return getAccountHolder(name).getBalance();
     }
 
+    public double getAccountBalance(AccountHolder account) {
+        return account.getBalance();
+    }
+
     @Override
-    public AccountHolder login(String username, String password) {
+    public void checkIfUserExists(String username) throws CredentialsException {
+        AccountHolder account = accountHolderMap.get(username);
+        if (account == null) throw new CredentialsException(CredentialErrorCodes.ACCOUNT_DOES_NOT_EXIST);
+    }
+
+    @Override
+    public AccountHolder login(String username, String password) throws CredentialsException {
         AccountHolder account = accountHolderMap.get(username);
         LocalDateTime timestamp = LocalDateTime.now();
         String logDetails = "";
@@ -120,7 +172,7 @@ public class AccountServiceImpl implements AccountService {
         }
 
         try {
-            if (!account.verifyPassword(password)) {
+            if (account.passwordIsWrong(password)) {
                 logDetails = "Invalid Password - " + password;
                 throw new CredentialsException(CredentialErrorCodes.INVALID_PASSWORD);
             }
@@ -134,6 +186,10 @@ public class AccountServiceImpl implements AccountService {
 
             account.updateLogs(newLog);
         }
+    }
+
+    public void authenticate(AccountHolder account, String password) throws CredentialsException {
+        if (account.passwordIsWrong(password)) throw new CredentialsException(CredentialErrorCodes.INVALID_PASSWORD);
     }
 
     private AccountHolder getAccountHolder(String name) {
