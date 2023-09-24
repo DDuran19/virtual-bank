@@ -17,7 +17,7 @@ public class UserInterface {
     public void startUI() {
         AtomicBoolean loggedIn = new AtomicBoolean();
         if (startApp(loggedIn) == null) return;
-        BankUI bankUI = new BankUI(loggedInAccount, BANK_SERVICE, this::clearScreen);
+        BankUI bankUI = new BankUI(loggedInAccount, BANK_SERVICE, this::clearScreen, this);
         try {
             bankUI.start();
         } catch (QuitException ignored) {

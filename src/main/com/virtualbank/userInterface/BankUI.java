@@ -12,11 +12,13 @@ public class BankUI {
     private final AccountService BANK_SERVICE;
     private final Input input = new Input();
     private final Runnable clearScreen;
+    private final UserInterface userInterface;
 
-    public BankUI(AccountHolder account, AccountService BANK_SERVICE, Runnable clearScreen) {
+    public BankUI(AccountHolder account, AccountService BANK_SERVICE, Runnable clearScreen, UserInterface userInterface) {
         this.account = account;
         this.BANK_SERVICE = BANK_SERVICE;
         this.clearScreen = clearScreen;
+        this.userInterface = userInterface;
     }
 
 
@@ -39,7 +41,7 @@ public class BankUI {
                     case 3 -> performTransfer();
                     case 4 -> checkBalance();
                     case 5 -> showTransactionLogs();
-                    case 6 -> new UserInterface().startUI();
+                    case 6 -> userInterface.startUI();
                     default -> System.out.println("Invalid choice. Please try again. ");
                 }
             } catch (QuitException ignored) {
@@ -77,7 +79,7 @@ public class BankUI {
         boolean validAmount = false;
         while (!validAmount) {
             try {
-                double transferAmount = input.getDouble("Enter Withdraw Amount: ");
+                double transferAmount = input.getDouble("Enter Transfer Amount: ");
                 BANK_SERVICE.transfer(account, toUsername, transferAmount);
                 validAmount = true;
             } catch (WithdrawException e) {
