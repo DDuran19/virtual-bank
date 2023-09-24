@@ -1,21 +1,30 @@
 package main.com.virtualbank.userInterface;
 
+import main.com.virtualbank.exceptions.CredentialsException;
 import main.com.virtualbank.exceptions.QuitException;
+import main.com.virtualbank.exceptions.WithdrawException;
 import main.com.virtualbank.model.AccountHolder;
+import main.com.virtualbank.service.AccountService;
 
 public class BankUI {
 
     private final AccountHolder account;
+    private final AccountService BANK_SERVICE;
     private final Input input = new Input();
+    private final Runnable clearScreen;
 
-    public BankUI(AccountHolder account) {
+    public BankUI(AccountHolder account, AccountService BANK_SERVICE, Runnable clearScreen) {
         this.account = account;
+        this.BANK_SERVICE = BANK_SERVICE;
+        this.clearScreen = clearScreen;
     }
+
 
     public void start() throws QuitException {
         System.out.println("Welcome to the Virtual Bank!");
 
         while (true) {
+            clearScreen.run();
             System.out.println("1. Deposit");
             System.out.println("2. Withdraw");
             System.out.println("3. Transfer");
@@ -42,52 +51,69 @@ public class BankUI {
                         showTransactionLogs();
                         break;
                     case 6:
-                        System.out.println("Logging out...");
+                        new UserInterface().startUI();
                         return;
                     default:
                         System.out.println("Invalid choice. Please try again. ");
                 }
             } catch (QuitException ignored) {
+            } catch (CredentialsException ignored) {
+                System.out.println("Unable to authenticate!");
             }
         }
     }
 
     private void performDeposit() throws QuitException {
-        double currentBalance = account.getBalance();
-        double newBalance = currentBalance + input.getDouble("Enter Deposit Amount: ");
-        account.setBalance(newBalance);
+        double depositAmount = input.getDouble("Enter Deposit Amount: ");
+        BANK_SERVICE.deposit(account, depositAmount);
     }
 
-    private void performWithdraw() throws QuitException {
-        boolean amountIsInvalid = true;
-        double currentBalance = account.getBalance();
-        double newBalance = currentBalance;
+    private void performWithdraw() throws QuitException, CredentialsException {
+        authenticate();
 
-        while (amountIsInvalid) {
-            newBalance = currentBalance - input.getDouble("Enter Withdraw Amount: ");
-            if (newBalance > -1) {
-                amountIsInvalid = false;
+        boolean validAmount = false;
+        while (!validAmount) {
+            try {
+                double withdrawAmount = input.getDouble("Enter Withdraw Amount: ");
+                BANK_SERVICE.withdraw(account, withdrawAmount);
+                validAmount = true;
+            } catch (WithdrawException e) {
+                System.out.println(e.getMessage());
             }
         }
-        account.setBalance(newBalance);
-
     }
 
-    private void performTransfer() throws QuitException {
-        // Implement logic to perform a transfer for the logged-in user.
-        System.out.println("performTransfer");
+    private void performTransfer() throws QuitException, CredentialsException {
+        authenticate();
+        String toUsername = input.get("Enter receiving username: ");
+        BANK_SERVICE.checkIfUserExists(toUsername);
+
+        boolean validAmount = false;
+        while (!validAmount) {
+            try {
+                double transferAmount = input.getDouble("Enter Withdraw Amount: ");
+                BANK_SERVICE.transfer(account, toUsername, transferAmount);
+                validAmount = true;
+            } catch (WithdrawException e) {
+                System.out.println(e.getMessage());
+            }
+        }
     }
 
     private void checkBalance() throws QuitException {
-        // Implement logic to check and display the account balance for the logged-in user.
-        System.out.println("checkBalance");
-
+        double currentBalance = BANK_SERVICE.getAccountBalance(account);
+        System.out.println("Your current balance is " + currentBalance + ".");
     }
 
     private void showTransactionLogs() throws QuitException {
-        // Implement logic to display transaction logs for the logged-in user.
-        System.out.println("showTransactionLogs");
+        BANK_SERVICE.showLogs(account);
 
+    }
+
+    private void authenticate() throws CredentialsException {
+        System.out.println("Please authenticate to proceed with this transaction. ");
+        String password = input.get("Enter password: ");
+        BANK_SERVICE.authenticate(account, password);
     }
 }
 
