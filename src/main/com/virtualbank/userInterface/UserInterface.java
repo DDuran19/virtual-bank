@@ -12,18 +12,12 @@ public class UserInterface {
     private static final Input input = new Input();
     private static AccountHolder loggedInAccount;
     private final AccountService BANK_SERVICE = new AccountServiceImpl();
-    private final String exitConfirmation = "Are you sure you want to exit? Press y to continue... ";
-    private final String loginString = "Kindly login to continue, type \"quit\" to cancel ...\n\n";
-    private final String welcomeScreen = "1. Login\n2. Register\n3. Exit\n\n";
-    private final String menu = "1. Deposit\n2. Withdraw\n3.Transfer\n4. Logout\n5.Exit\n\n";
-    private final String amount = "Enter amount: ";
-    private final String transferUsername = "Enter recipient's username: ";
-    private final String error = "Something went wrong!\n\n";
+    private final String welcomeScreen = "\n1. Login\n2. Register\n3. Exit\n\n";
 
     public void startUI() {
         AtomicBoolean loggedIn = new AtomicBoolean();
         if (startApp(loggedIn) == null) return;
-        BankUI bankUI = new BankUI(loggedInAccount);
+        BankUI bankUI = new BankUI(loggedInAccount, BANK_SERVICE, this::clearScreen);
         try {
             bankUI.start();
         } catch (QuitException ignored) {
@@ -61,12 +55,12 @@ public class UserInterface {
     }
 
     private AccountHolder login(AtomicBoolean loggedInStatus) {
-        boolean cancel = false;
 
         while (!loggedInStatus.get()) {
             clearScreen();
             showWelcomeScreen();
             System.out.println(welcomeScreen);
+            String loginString = "Kindly login to continue, type \"quit\" to cancel ...\n\n";
             System.out.println(loginString);
             try {
                 String username = input.get("Enter username: ", true);
@@ -80,7 +74,7 @@ public class UserInterface {
                     pressAnyKeyToContinue();
                     return accountHolder;
                 }
-                System.out.println(error);
+                System.out.println("Something went wrong!\n\n");
 
             } catch (QuitException e) {
                 return null;
@@ -108,6 +102,7 @@ public class UserInterface {
     }
 
     private void exitApp() throws QuitException {
+        String exitConfirmation = "Are you sure you want to exit? Press y to continue... ";
         String confirmation = input.get(exitConfirmation);
         if (confirmation.equalsIgnoreCase("Y")) {
             System.out.println("Thank you for using Virtual Bank 1.0! ");
