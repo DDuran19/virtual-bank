@@ -9,9 +9,9 @@ public class CredentialsException extends RuntimeException {
 
     private static String decodeCredentialErrorCode(CredentialErrorCodes credentialErrorCode) {
         return switch (credentialErrorCode) {
-            case ACCOUNT_EXISTS -> "Account already Exists! Please login instead.";
-            case ACCOUNT_DOES_NOT_EXIST -> "Account doesn't exist! Please register instead.";
-            case INVALID_PASSWORD -> "Invalid Password!";
+            case ACCOUNT_EXISTS -> "Account already Exists! Please login instead. ";
+            case ACCOUNT_DOES_NOT_EXIST -> "Account doesn't exist! ";
+            case INVALID_PASSWORD -> "Invalid Password! ";
         };
     }
 
