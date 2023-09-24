@@ -29,10 +29,6 @@ public class AccountHolder {
         this.balance = balance;
     }
 
-    public String getName() {
-        return username;
-    }
-
     public String getFullName() {
         return this.firstName + " " + this.lastName;
     }
@@ -45,8 +41,8 @@ public class AccountHolder {
         this.lastName = lastName;
     }
 
-    public boolean verifyPassword(String password) {
-        return this.password.equals(password);
+    public boolean passwordIsWrong(String password) {
+        return !this.password.equals(password);
     }
 
     public void setPassword(String password) {
@@ -59,5 +55,9 @@ public class AccountHolder {
 
     public ArrayList<TransactionLog> getLogs() {
         return logs;
+    }
+
+    public String getUsername() {
+        return this.username;
     }
 }
