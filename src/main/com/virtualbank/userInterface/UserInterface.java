@@ -22,8 +22,12 @@ public class UserInterface {
 
     public void startUI() {
         AtomicBoolean loggedIn = new AtomicBoolean();
-        startApp(loggedIn);
-
+        if (startApp(loggedIn) == null) return;
+        BankUI bankUI = new BankUI(loggedInAccount);
+        try {
+            bankUI.start();
+        } catch (QuitException ignored) {
+        }
     }
 
     private void showWelcomeScreen() {
@@ -53,7 +57,7 @@ public class UserInterface {
             }
 
         }
-        return null;
+        return loggedInAccount;
     }
 
     private AccountHolder login(AtomicBoolean loggedInStatus) {

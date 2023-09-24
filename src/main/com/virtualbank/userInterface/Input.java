@@ -68,8 +68,8 @@ public class Input {
         while (!validNumber) {
             try {
                 String userInput = get(prompt, true);
-                validNumber = true;
                 number = Integer.parseInt(userInput);
+                validNumber = true;
             } catch (NumberFormatException e) {
                 System.out.print("Only numbers are allowed! ");
             }
@@ -78,4 +78,19 @@ public class Input {
     }
 
 
+    public double getDouble(String prompt) throws QuitException {
+
+        boolean validNumber = false;
+        double number = 0.0;
+        while (!validNumber) {
+            try {
+                String userInput = get(prompt, true);
+                number = Double.parseDouble(userInput);
+                validNumber = true;
+            } catch (NumberFormatException e) {
+                System.out.print("Only numbers are allowed! ");
+            }
+        }
+        return number;
+    }
 }
