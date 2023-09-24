@@ -19,6 +19,6 @@ public class TransactionLog {
 
     @Override
     public String toString() {
-        return transactionType + ": " + details + " at " + timestamp;
+        return transactionType + ": \t" + details + " \tat " + timestamp;
     }
 }
